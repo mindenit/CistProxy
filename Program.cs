@@ -23,26 +23,21 @@ app.MapGet("/lists/teachers",
 app.MapGet("/lists/auditories",
     async (HttpContext x) => { return Results.Content(Requests.GetAuditoriesJson(), "application/json"); });
 
-app.MapGet("schedule/groups/{id}", async (HttpContext x, long id) =>
+app.MapGet("schedule/{id}", async (HttpContext x, long id) =>
 {
-    int type = x.Request.Query.ContainsKey("type") ? int.Parse(x.Request.Query["type"]) : 0;
+    int type = x.Request.Query.ContainsKey("type") ? int.Parse(x.Request.Query["type"]) : 1;
     var json = JsonFixers.TryFix(Requests.GetEventsJson(type, id));
-    return Results.Content(json, "application/json");
+
+    try
+    {
+        var data = JsonSerializer.Deserialize<object>(json);
+        return Results.Content(json, "application/json");
+    }
+    catch (Exception e)
+    {
+        return Results.Content("[]", "application/json");
+    }
 });
-
-app.MapGet("schedule/teachers/{id}", async (HttpContext x, long id) =>
-    {
-        int type = x.Request.Query.ContainsKey("type") ? int.Parse(x.Request.Query["type"]) : 0;
-        var json = JsonFixers.TryFix(Requests.GetEventsJson(type, id));
-        return Results.Content(json, "application/json");
-    });
-
-app.MapGet("schedule/auditories/{id}", async (HttpContext x, long id) =>
-    {
-        int type = x.Request.Query.ContainsKey("type") ? int.Parse(x.Request.Query["type"]) : 0;
-        var json = JsonFixers.TryFix(Requests.GetEventsJson(type, id));
-        return Results.Content(json, "application/json");
-    });
 
 app.MapOpenApi(); 
 app.MapScalarApiReference("/");
